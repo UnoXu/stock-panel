@@ -1,0 +1,41 @@
+# 持仓助手 — Fly.io 部署配置
+#
+# 部署步骤见 README.md 的「远程部署」一节。
+# 关键点：
+#   1. 必须挂持久卷到 /data，否则容器一重启你的持仓就没了
+#   2. 必须设 STOCK_TOKEN，否则公网上谁都能看到你的持仓
+#   3. 内存 256MB 就够（这个应用只做几件事：取行情、算数、读写一个 JSON）
+
+app = "REPLACE-WITH-YOUR-APP-NAME"
+primary_region = "sin"   # 新加坡，离国内最近；可用 `fly platform regions` 查看全部
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  HOST = "0.0.0.0"
+  DATA_DIR = "/data"
+  # 注意：口令不要写在这里，用 `fly secrets set STOCK_TOKEN=...` 设，避免进配置文件
+
+# 挂载持久卷到 /data（state.json 就存在这里）
+[[mounts]]
+  source = "stock_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true              # 强制走 HTTPS
+  auto_stop_machines = "suspend"  # 没人访问就挂起，省钱
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 60
+    soft_limit = 25
+
+# 只用一台最小规格机器（这个应用完全不需要更多）
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

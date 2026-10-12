@@ -1,0 +1,25 @@
+# 构建镜像时排除的东西：本地数据、备份、开发工具、垃圾文件
+# 你的持仓数据绝不会被推进镜像里
+
+# ── 本地数据（绝对不能被拷进镜像）──
+state.json
+state.json.*.tmp
+state.json.corrupt-*
+.auth.txt
+state-snapshots/
+
+# ── 开发与测试 ──
+test/
+tools/
+*.md
+!README.md
+package.json
+pnpm-lock.yaml
+
+# ── 系统 / 编辑器垃圾 ──
+.git/
+.gitignore
+.DS_Store
+Thumbs.db
+*.log
+node_modules/

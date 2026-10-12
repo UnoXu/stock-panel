@@ -1,0 +1,11 @@
+# 你的真实持仓、口令、以及历史快照，都不要提交到任何仓库
+state.json
+state.json.*.tmp
+state.json.corrupt-*
+.auth.txt
+state-snapshots/
+
+# 编辑器 / 系统垃圾
+.DS_Store
+Thumbs.db
+*.log

@@ -1,0 +1,36 @@
+# 持仓助手 — Render Blueprint（免费档即可，无需持久磁盘）
+#
+# 为什么不需要磁盘：数据存在你自己的免费键值存储里（Upstash 等），
+# 容器本身完全无状态，所以免费档重启、休眠、重建都不会丢数据。
+#
+# 用法：把这个仓库/目录部署到 Render 时选 "Blueprint"，它会读这个文件。
+# 之后在 Render 控制台填两个环境变量（标了 sync:false 的那两个）。
+#
+# 需要你准备的：
+#   1) 一个免费的 Upstash Redis 数据库（见 DEPLOY.md 第 1 步），拿到 REST URL 和 token
+#   2) 一个你自己定的访问口令
+
+services:
+  - type: web
+    name: stock-panel
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free                    # 免费档；付费档可去掉冷启动等待
+    region: singapore             # 离国内最近
+    healthCheckPath: /api/health
+    autoDeploy: false             # 不要自动部署（本机 git 不可达 GitHub）
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: HOST
+        value: "0.0.0.0"
+      # 云端的数据目录：没有持久磁盘，这里只用来放「降级时的本地副本」
+      - key: DATA_DIR
+        value: /tmp/stock-data
+      # ↓↓↓ 这两个在 Render 控制台里填，不要写进文件、不要提交到任何仓库 ↓↓↓
+      - key: KV_REST_URL
+        sync: false               # 你的免费键值存储 REST 地址
+      - key: KV_REST_TOKEN
+        sync: false               # 对应的 token
+      - key: STOCK_TOKEN
+        sync: false               # 访问口令：公网上必须有，否则谁都能看你的持仓
